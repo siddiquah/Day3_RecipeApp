@@ -16,14 +16,15 @@
         android:theme="@style/Theme.Day6_Recipe_App">
         <activity
             android:name=".DetailActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="locked" />
         <activity
             android:name=".HomeActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="locked" />
         <activity
             android:name=".SplashActivity"
             android:screenOrientation="locked">
-            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
