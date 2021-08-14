@@ -6,11 +6,10 @@ import androidx.room.PrimaryKey
 import java.io.Serializable
 
 @Entity(tableName = "Recipes")
-data class Recipes (
+data class Recipes(
     @PrimaryKey(autoGenerate = true)
-    var id : Int,
+    var id:Int,
 
     @ColumnInfo(name = "dishName")
     var dishName:String
-
 ) : Serializable

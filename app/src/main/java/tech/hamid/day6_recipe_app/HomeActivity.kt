@@ -1,17 +1,19 @@
 package tech.hamid.day6_recipe_app
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.coroutines.launch
 import tech.hamid.day6_recipe_app.adapter.MainCategoryAdapter
 import tech.hamid.day6_recipe_app.adapter.SubCategoryAdapter
-import tech.hamid.day6_recipe_app.entities.Recipes
+import tech.hamid.day6_recipe_app.database.RecipeDatabase
+import tech.hamid.day6_recipe_app.entities.CategoryItems
+import tech.hamid.day6_recipe_app.entities.MealsItems
 
-class HomeActivity : AppCompatActivity() {
-
-    var arrMainCategory = ArrayList<Recipes>()
-    var arrSubCategory = ArrayList<Recipes>()
+class HomeActivity : BaseActivity() {
+    var arrMainCategory = ArrayList<CategoryItems>()
+    var arrSubCategory = ArrayList<MealsItems>()
 
     var mainCategoryAdapter = MainCategoryAdapter()
     var subCategoryAdapter = SubCategoryAdapter()
@@ -20,30 +22,54 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        arrMainCategory.add(Recipes(1, "Beef"))
-        arrMainCategory.add(Recipes(2, "Chicken"))
-        arrMainCategory.add(Recipes(3, "Fish"))
-        arrMainCategory.add(Recipes(4, "Lamb"))
-        arrMainCategory.add(Recipes(5, "Egg"))
+        getDataFromDb()
 
-        mainCategoryAdapter.setData(arrMainCategory)
+        mainCategoryAdapter.setClickListener(onCLicked)
+        subCategoryAdapter.setClickListener(onCLickedSubItem)
 
-        arrSubCategory.add(Recipes(1, "Dry Beef Fry"))
-        arrSubCategory.add(Recipes(2, "Chicken curry"))
-        arrSubCategory.add(Recipes(3, "Fish fry"))
-        arrSubCategory.add(Recipes(4, "Lamb stew"))
-        arrSubCategory.add(Recipes(5, "Boiled egg with sprinkled spices"))
+    }
 
-        subCategoryAdapter.setData(arrSubCategory)
+    private val onCLicked  = object : MainCategoryAdapter.OnItemClickListener{
+        override fun onClicked(categoryName: String) {
+            getMealDataFromDb(categoryName)
+        }
+    }
 
-        rv_main_category.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-        rv_main_category.adapter = mainCategoryAdapter
+    private val onCLickedSubItem  = object : SubCategoryAdapter.OnItemClickListener{
+        override fun onClicked(id: String) {
+            var intent = Intent(this@HomeActivity,DetailActivity::class.java)
+            intent.putExtra("id",id)
+            startActivity(intent)
+        }
+    }
 
-        rv_sub_category.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-        rv_sub_category.adapter = subCategoryAdapter
+    private fun getDataFromDb(){
+        launch {
+            this.let {
+                var cat = RecipeDatabase.getDatabase(this@HomeActivity).recipeDao().getAllCategory()
+                arrMainCategory = cat as ArrayList<CategoryItems>
+                arrMainCategory.reverse()
+
+                getMealDataFromDb(arrMainCategory[0].strcategory)
+                mainCategoryAdapter.setData(arrMainCategory)
+                rv_main_category.layoutManager = LinearLayoutManager(this@HomeActivity,LinearLayoutManager.HORIZONTAL,false)
+                rv_main_category.adapter = mainCategoryAdapter
+            }
+        }
+    }
+
+    private fun getMealDataFromDb(categoryName:String){
+        tvCategory.text = "$categoryName Category"
+        launch {
+            this.let {
+                var cat = RecipeDatabase.getDatabase(this@HomeActivity).recipeDao().getSpecificMealList(categoryName)
+                arrSubCategory = cat as ArrayList<MealsItems>
+                subCategoryAdapter.setData(arrSubCategory)
+                rv_sub_category.layoutManager = LinearLayoutManager(this@HomeActivity,LinearLayoutManager.HORIZONTAL,false)
+                rv_sub_category.adapter = subCategoryAdapter
+            }
 
 
-
-
+        }
     }
 }
